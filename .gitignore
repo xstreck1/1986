@@ -5,3 +5,4 @@ node_modules
 plugins
 editor
 bamboo
+/nbproject/private/

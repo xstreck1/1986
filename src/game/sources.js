@@ -21,19 +21,24 @@ game.module(
         init: function() {
             this.sprite = new game.Sprite('tank.jpg');
             this.sprite.anchor.set(0.5, 0.5);
+            this.sprite.position.set(300,300);
             game.scene.stage.addChild(this.sprite);
+            game.scene.addObject(this);
         },
         
         update: function() {
             if (this.move_type == 0 ) {
                 rot = this.sprite.rotation; 
-                this.sprite.position.x -= Math.cos(rot);
-                this.sprite.position.y -= Math.sin(rot);
+                step_lenght = ( game.system.delta / step_time) * step_movement;
+                this.sprite.position.x -= Math.cos(rot) * step_lenght;
+                this.sprite.position.y -= Math.sin(rot) * step_lenght;
                 
                 
             } else {
                 dir = this.move_type == 1 ? 1 : -1;
-                this.sprite.rotation += (Math.PI * dir) * 0.01;
+                this.sprite.rotation +=  dir * ( game.system.delta / step_time) * step_rotation;
+                this.sprite.rotation = this.sprite.rotation % (Math.PI * 2);
+                console.log(this.sprite.rotation);
             }
         },
         

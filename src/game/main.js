@@ -15,13 +15,9 @@ SceneGame = game.Scene.extend({
     init : function() {        
         map = new Map();
         tank = new Tank();
-        tank.sprite.position.set(610,175);
     },
     
-    update : function() {
-        tank.update();
-    },
-    
+
     mousedown: function() {
         tank.move_type = (tank.move_type + 1) % 3;
     }

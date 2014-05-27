@@ -6,7 +6,7 @@ game.module(
     var hex_side = (hex_width / Math.cos(Math.PI / 6.)) * 0.5;
     var hex_height = hex_side * 1.5;
 
-    step_time = 0.5;
+    step_time = 1;
     step_rotation = Math.PI / 3.;
     step_movement = hex_width;
     step_repeat_ms = 1000 * step_time;
@@ -32,7 +32,7 @@ game.module(
     };
     
     rotationDir = function(rot) {
-        return Math.round(3 * rot / Math.PI);
+        return Math.round(3 * rot / Math.PI) % 6;
     };
 
     placeObject = function(x, y, dir, self, sprite_name) {

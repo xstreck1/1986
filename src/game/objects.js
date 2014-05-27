@@ -59,14 +59,24 @@ game.module(
             this.sprite.interactive = true;
             this.sprite.click = this.click.bind(this);
             this.sprite.blendMode = 2;   
+        },
+        
+        rideOver: function() {
+            if (this.state === 'turned') {
+                replaceObject(this.x, this.y, this.dir, this, 'fixed', this.sprite);
+                this.sprite.interactive = false;
+                this.sprite.blendMode = 2;   
+            }
         }
     });
 
     Tank = game.Class.extend({
-        move_type: 0,
+        move_type: 3,
         x: 0,
         y: 0,
         dir: 0,
+        removed: false,
+        
         init: function(x, y, dir) {
             this.x = x;
             this.y = y;
@@ -74,7 +84,9 @@ game.module(
             placeObject(x, y, dir, this, 'tank');
         },
         update: function() {
-            if (this.move_type === 0) {
+            if (this.move_type === 0)
+                return;
+            else if (this.move_type === 3) {
                 rot = this.sprite.rotation;
                 step_lenght = (game.system.delta / step_time) * step_movement;
                 this.sprite.position.x -= Math.cos(rot) * step_lenght;
@@ -89,9 +101,7 @@ game.module(
                 this.sprite.rotation = this.sprite.rotation % (Math.PI * 2);
             }
         },
-        changeType: function() {
-            this.move_type = (this.move_type + 1) % 3;
-        },
+
         correct: function() {
             this.dir = rotationDir(this.sprite.rotation);
             this.sprite.rotation = directionRot(this.dir);
@@ -103,11 +113,19 @@ game.module(
         setMove: function(other_rot) {
             var diff = other_rot - this.sprite.rotation;
             if (Math.min(Math.abs(diff), Math.abs((Math.PI * 2) - Math.abs(diff))) < Math.PI / 4.) {
-                this.move_type = 0;
+                this.move_type = 3;
             } else if (diff * -1 > Math.PI || (diff > 0 && diff < Math.PI))
                 this.move_type = 1;
             else
                 this.move_type = 2;
+        },
+        remove: function() {
+            this.removed = true;
+            this.sprite.remove();
+        },
+        halt: function() {
+            if (this.move_type === 3)
+                this.move_type = 0;
         }
     });
 

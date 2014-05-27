@@ -24,6 +24,7 @@ game.module(
                 },
                 my_timer: function() {
                     for (var tank_i = 0; tank_i < this.tanks.length; tank_i++) {
+                        this.tanks[tank_i].correct();
                         for (var sing_i = 0; sing_i < this.signposts.length; sing_i++) {
                             if (areOverlapping(this.tanks[tank_i].sprite, this.signposts[sing_i].sprite)){
                                 this.tanks[tank_i].setMove(this.signposts[sing_i].sprite.rotation);

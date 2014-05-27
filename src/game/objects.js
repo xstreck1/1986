@@ -70,11 +70,20 @@ game.module(
             this.move_type = (this.move_type + 1) % 3;
         },
         
+        correct: function() {
+            this.dir = rotationDir(this.sprite.rotation);
+            this.sprite.rotation = directionRot(this.dir);
+            this.y = Yposition(this.sprite.position.y);
+            this.sprite.position.y = positionY(this.y);
+            this.x = Xposition(this.sprite.position.x, this.y);
+            this.sprite.position.x = positionX(this.x, this.y);
+        },
+        
         setMove: function(other_rot) {
             var diff = other_rot - this.sprite.rotation;
-            if (Math.min(Math.abs(diff), Math.abs((Math.PI * 2) - Math.abs(diff))) < Math.PI / 4.)
-                this.move_type = 0;
-            else if (diff * -1 > Math.PI || (diff > 0 && diff < Math.PI))
+            if (Math.min(Math.abs(diff), Math.abs((Math.PI * 2) - Math.abs(diff))) < Math.PI / 4.) {
+                this.move_type = 0; 
+            } else if (diff * -1 > Math.PI || (diff > 0 && diff < Math.PI))
                 this.move_type = 1;
             else
                 this.move_type = 2;                

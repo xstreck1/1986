@@ -6,25 +6,40 @@ game.module(
     var hex_side = (hex_width / Math.cos(Math.PI / 6.)) * 0.5;
     var hex_height = hex_side * 1.5;
 
-    step_time = 0.1;
+    step_time = 0.5;
     step_rotation = Math.PI / 3.;
     step_movement = hex_width;
     step_repeat_ms = 1000 * step_time;
 
-    position = function(x, y, dir) {
-        return [
-            hex_width * x - ((y % 2) * hex_width * 0.5),
-            hex_height * y + hex_side * 0.25,
-            dir * step_rotation
-        ];
+    positionX = function(x, y) {
+        return  hex_width * x - ((y % 2) * hex_width * 0.5);
+    };
+    
+    Xposition = function(x, y) {
+        return  Math.round((x + ((y % 2) * hex_width * 0.5)) / hex_width);
+    };
+    
+    positionY = function(y) {
+        return y * hex_height + (hex_side * 0.25);
+    };
+    
+    Yposition = function(y) {
+        return  Math.round((y + hex_side * 0.25) / hex_height);
+    };
+    
+    directionRot = function(dir) {
+        return dir * step_rotation;
+    };
+    
+    rotationDir = function(rot) {
+        return Math.round(3 * rot / Math.PI);
     };
 
     placeObject = function(x, y, dir, self, sprite_name) {
         self.sprite = new game.Sprite(sprite_name);
         self.sprite.anchor.set(0.5, 0.5);
-        my_pos = position(x, y, dir);
-        self.sprite.position.set(my_pos[0], my_pos[1]);
-        self.sprite.rotation = my_pos[2];
+        self.sprite.position.set(positionX(x, y), positionY(y));
+        self.sprite.rotation = directionRot(dir);
         game.scene.stage.addChild(self.sprite);
         game.scene.addObject(self);
     };
@@ -51,7 +66,7 @@ game.module(
         [3,7,2], [4,7,2], [5,7,2], [6,7,1], [7,7,1], [8,7,1], [9,7,1], [10,7,1], [11,7,0], [12,7,0],
         [3,8,2], [4,8,2], [5,8,2], [6,8,1], [7,8,1], [8,8,1], [9,8,1], [10,8,1], [11,8,1], 
         [4,9,2], [5,9,2], [6,9,1], [7,9,1], [8,9,1], [9,9,1], [10,9,1], [11,9,1], [12,9,1]
-    ]
+    ];
 
     addSigns = function() {
         for (var i = 0; i < border_arrows.length; i++)

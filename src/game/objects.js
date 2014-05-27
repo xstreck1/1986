@@ -10,6 +10,7 @@ game.module(
     game.addAsset('arrow_red.png', 'fixed');
     game.addAsset('arrow_white.png', 'start');
     game.addAsset('prague.png', 'prague');
+    game.addAsset('font.fnt', 'font');
 
     Map = game.Class.extend({
         init: function() {
@@ -32,6 +33,7 @@ game.module(
         dir: 0,
         orig_dir: 0,
         state: 'none',
+        used: false,
         
         init: function(x, y, dir, state) {
             this.x = x;
@@ -61,11 +63,24 @@ game.module(
             this.sprite.blendMode = 2;   
         },
         
+        clear: function() {
+            this.used = false;
+        },
+        
         rideOver: function() {
             if (this.state === 'turned') {
                 replaceObject(this.x, this.y, this.dir, this, 'fixed', this.sprite);
                 this.sprite.interactive = false;
                 this.sprite.blendMode = 2;   
+                this.state = 'fixed';
+            }
+            this.used = true;
+        },
+        
+        fixIfFinished: function() {
+            if (this.dir !== this.orig_dir && this.state === 'fixed' && !this.used) {
+                this.dir = this.orig_dir;
+                this.sprite.rotation = directionRot(this.dir);
             }
         }
     });

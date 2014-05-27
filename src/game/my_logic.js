@@ -101,5 +101,5 @@ game.module(
     areOverlapping = function(A, B) {
         return (Math.abs(A.position.x - B.position.x) + 
                 Math.abs(A.position.y - B.position.y)) < 20;
-    }
+    };
 });

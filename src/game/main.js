@@ -11,28 +11,32 @@ game.module(
                 tanks: [],
                 signposts: [],
                 prague: {},
-                init: function() {
-                    text = new game.BitmapText('Time:', {font: 'Pixel'});                    
-                   
-                    this.stage.addChild(text);
-                    text.setText('ss');
-                    text.updateText();
+                current_text: {},
+                init: function() {                    
                     map = new Map();
                     this.prague = new Prague(5, 4, 0);
                     addSigns();
-                    /*this.tanks.push(new Tank(13, 1, 0));
-                     this.tanks.push(new Tank(13, 3, 0));
-                     this.tanks.push(new Tank(13, 5, 0));
-                     this.tanks.push(new Tank(13, 7, 0));*/
-                    this.tanks.push(new Tank(15, 7, 0));
-                    this.tanks.push(new Tank(13, 8, 0));
+
+                    this.current_text = new game.BitmapText('TIME: 0h', {font: 'Capitalist'});
+                    this.stage.addChild(this.current_text);
+                    this.current_text.alpha = 0.8;
+                    this.current_text.position.set(450, 00);
                     
-                    text = new game.BitmapText('text', {font: 'Pixel'});
-                    this.stage.addChild(text);
 
                     this.addTimer(step_repeat_ms, this.my_timer.bind(this), true);
+                    
+                    this.gameEnd();
                 },
                 my_timer: function() {
+                    // set text
+                    this.current_text.setText("TIME: " + steps_c + "h");
+
+                    // add new tank 
+                    if (++steps_c % 2) {
+                        position = Math.floor(Math.random() * init_arrows.length);
+                        this.tanks.push(new Tank(init_arrows[position][0], init_arrows[position][1], init_arrows[position][2]));
+                    }
+
                     // Remove the used marks
                     for (var sing_i = 0; sing_i < this.signposts.length; sing_i++) {
                         this.signposts[sing_i].clear();
@@ -78,16 +82,24 @@ game.module(
                     }
                 },
                 gameEnd: function() {
+                    this.timers = [];
                     game.system.setScene(EndScene);
                 }
             });
-            
+
             EndScene = game.Scene.extend({
-                init: function() {
+                 backgroundColor: 0x883333,
+                
+                init: function() { 
                     map = new Map();
+                    map.sprite.alpha = 1;
+                    map.sprite.blendMode = 8;
+                    current_text = new game.BitmapText('elapsed: ' + steps_c, {font: 'CapitalistW'});
+                    this.stage.addChild(current_text);
+                    current_text.alpha = 0.8;
+                    current_text.position.set(40, 00);
                 }
             });
 
             game.start();
-            game.system.pauseOnHide = true;
         });

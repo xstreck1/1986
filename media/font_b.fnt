@@ -1,8 +1,8 @@
 <font>
-  <info face="Capitalist" size="30" bold="0" italic="0" charset="" unicode="" stretchH="100" smooth="1" aa="1" padding="2,2,2,2" spacing="0,0" outline="0"/>
+  <info face="CapitalistB" size="30" bold="0" italic="0" charset="" unicode="" stretchH="100" smooth="1" aa="1" padding="2,2,2,2" spacing="0,0" outline="0"/>
   <common lineHeight="48" base="38" scaleW="115" scaleH="485" pages="1" packed="0"/>
   <pages>
-    <page id="0" file="font.png"/>
+    <page id="0" file="font_b.png"/>
   </pages>
   <chars count="80">
     <char id="97" x="2" y="2" width="15" height="22" xoffset="1" yoffset="8" xadvance="18" page="0" chnl="15"/>

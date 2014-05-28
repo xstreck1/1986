@@ -6,10 +6,12 @@ game.module(
     var hex_side = (hex_width / Math.cos(Math.PI / 6.)) * 0.5;
     var hex_height = hex_side * 1.5;
 
-    step_time = 1;
+    step_time = 0.1;
     step_rotation = Math.PI / 3.;
     step_movement = hex_width;
     step_repeat_ms = 1000 * step_time;
+    
+    steps_c = 0;
 
     positionX = function(x, y) {
         return  hex_width * x - ((y % 2) * hex_width * 0.5);
@@ -66,7 +68,7 @@ game.module(
         [12, 10, 1]
     ];
     
-    var init_arrows = [
+    init_arrows = [
          [13, 5, 0], [12, 6, 0], [13, 7, 0], [12, 8, 0], [13, 9, 0]
     ];
     
@@ -85,12 +87,12 @@ game.module(
         for (var i = 0; i < border_arrows.length; i++)
             game.scene.signposts.push(
                     new SignPost(border_arrows[i][0], border_arrows[i][1],
-                            border_arrows[i][2], 'fixed'));
+                            border_arrows[i][2], 'finished'));
                             
         for (var i = 0; i < init_arrows.length; i++)
             game.scene.signposts.push(
                     new SignPost(init_arrows[i][0], init_arrows[i][1],
-                            init_arrows[i][2], 'start'));
+                            init_arrows[i][2], 'finished'));
                             
         for (var i = 0; i < inland_arrows.length; i++)
             game.scene.signposts.push(

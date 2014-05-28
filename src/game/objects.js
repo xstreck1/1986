@@ -8,10 +8,12 @@ game.module(
     game.addAsset('arrow_green.png', 'inland');
     game.addAsset('arrow_orange.png', 'turned');
     game.addAsset('arrow_red.png', 'fixed');
-    game.addAsset('arrow_white.png', 'start');
+    game.addAsset('arrow_white.png', 'finished');
     game.addAsset('prague.png', 'prague');
-    game.addAsset('font.fnt', 'font');
-
+    game.addAsset('font.fnt');
+    game.addAsset('font_b.fnt');
+    game.addAsset('font_w.fnt');
+    
     Map = game.Class.extend({
         init: function() {
             this.sprite = new game.Sprite('back');
@@ -79,6 +81,10 @@ game.module(
         
         fixIfFinished: function() {
             if (this.dir !== this.orig_dir && this.state === 'fixed' && !this.used) {
+                replaceObject(this.x, this.y, this.dir, this, 'finished', this.sprite);
+                this.sprite.interactive = false;
+                this.sprite.blendMode = 2;   
+                this.state = 'fixed';
                 this.dir = this.orig_dir;
                 this.sprite.rotation = directionRot(this.dir);
             }

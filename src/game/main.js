@@ -6,35 +6,63 @@ game.module(
                 'game.my_logic'
                 )
         .body(function() {
+            game.Loader.inject({
+                backgroundColor: 0x00000000,
+                initStage: function() {                    
+                    this.bar = new game.Graphics();
+                    this.bar.beginFill(0xffffff);
+                    this.bar.drawRect(0, 0, 260, 20);
+
+                    this.bar.position.x = game.system.width / 2 - (260 / 2);
+                    this.bar.position.y = game.system.height / 2 - (40 / 2);
+
+                    this.bar.scale.x = this.percent / 100;
+                    game.system.stage.addChild(this.bar);
+                },
+                onPercentChange: function() {
+                    this.bar.scale.x = this.percent / 100;
+                }
+            });
+
             SceneGame = game.Scene.extend({
                 backgroundColor: 0xb9bec7,
                 tanks: [],
                 signposts: [],
-                prague: {},
-                current_text: {},
-                init: function() {                    
+                init_fields: [[14, 5, 0], [13, 6, 0], [14, 7, 0], [13, 8, 0], [14, 9, 0]],
+                
+                init: function() {
                     map = new Map();
                     this.prague = new Prague(5, 4, 0);
                     addSigns();
-
-                    this.current_text = new game.BitmapText('TIME: 0h', {font: 'Capitalist'});
-                    this.stage.addChild(this.current_text);
-                    this.current_text.alpha = 0.8;
-                    this.current_text.position.set(450, 00);
-                    
+                    this.setTexts();
 
                     this.addTimer(step_repeat_ms, this.my_timer.bind(this), true);
-                    
+
+                    game.audio.playMusic('my_music');
                     this.gameEnd();
+                },
+                setTexts: function() {
+                    this.current_text = new game.BitmapText('time: 0h', {font: 'Capitalist'});
+                    this.stage.addChild(this.current_text);
+                    this.current_text.alpha = text_blend;
+                    this.current_text.position.set(450, 30);
+
+                    this.highscore = game.storage.get('highscore') || 0;
+
+                    this.best_text = new game.BitmapText('BEST: ' + this.highscore + 'h', {font: 'Capitalist'});
+                    this.stage.addChild(this.best_text);
+                    this.best_text.alpha = text_blend;
+                    this.best_text.position.set(450, 00);
                 },
                 my_timer: function() {
                     // set text
-                    this.current_text.setText("TIME: " + steps_c + "h");
+                    this.current_text.setText("time: " + steps_c + "h");
 
                     // add new tank 
                     if (++steps_c % 2) {
-                        position = Math.floor(Math.random() * init_arrows.length);
-                        this.tanks.push(new Tank(init_arrows[position][0], init_arrows[position][1], init_arrows[position][2]));
+                        position = Math.floor(Math.random() * this.init_fields.length);
+                        this.tanks.push(new Tank(this.init_fields[position][0],
+                                this.init_fields[position][1], this.init_fields[position][2]));
                     }
 
                     // Remove the used marks
@@ -82,22 +110,25 @@ game.module(
                     }
                 },
                 gameEnd: function() {
-                    this.timers = [];
+                    for (var timer_t = 0; timer_t < this.timers.length; timer_t ++)
+                        this.timers[timer_t].pause();
+                    if (steps_c >  this.highscore)
+                        game.storage.set('highscore', steps_c);
                     game.system.setScene(EndScene);
                 }
             });
 
             EndScene = game.Scene.extend({
-                 backgroundColor: 0x883333,
-                
-                init: function() { 
+                backgroundColor: 0x883333,
+                init: function() {
                     map = new Map();
                     map.sprite.alpha = 1;
                     map.sprite.blendMode = 8;
                     current_text = new game.BitmapText('elapsed: ' + steps_c, {font: 'CapitalistW'});
                     this.stage.addChild(current_text);
                     current_text.alpha = 0.8;
-                    current_text.position.set(40, 00);
+                    current_text.style.align = 'right';
+                    current_text.position.set(0, 0);
                 }
             });
 

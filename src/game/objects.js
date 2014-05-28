@@ -1,7 +1,8 @@
 game.module(
         'game.objects'
         ).require(
-        'game.my_logic'
+        'game.my_logic',
+        'engine.audio'
         ).body(function() {
     game.addAsset('background.png', 'back');
     game.addAsset('tank.png', 'tank');
@@ -13,6 +14,7 @@ game.module(
     game.addAsset('font.fnt');
     game.addAsset('font_b.fnt');
     game.addAsset('font_w.fnt');
+    game.addAudio('hall_of_the_mountain_king.mp3', 'my_music');
     
     Map = game.Class.extend({
         init: function() {
@@ -26,6 +28,7 @@ game.module(
     Prague = game.Class.extend({
         init: function(x, y, dir) {
             placeObject(x, y, dir, this, 'prague');
+            this.sprite.blendMode = 5;   
         }
     });
 
@@ -56,10 +59,12 @@ game.module(
             if (dist > (hex_width / 2)) 
                 return;
 
-            if (this.state === 'inland')
+            if (this.state === 'inland') {
                 this.state = 'turned';
+                this.sprite.setTexture('turned');
+            }
             this.dir = (this.dir + 1) % 6;
-            replaceObject(this.x, this.y, this.dir, this, this.state, this.sprite);
+            this.sprite.rotation = directionRot(this.dir);
             this.sprite.interactive = true;
             this.sprite.click = this.click.bind(this);
             this.sprite.blendMode = 2;   
@@ -71,7 +76,7 @@ game.module(
         
         rideOver: function() {
             if (this.state === 'turned') {
-                replaceObject(this.x, this.y, this.dir, this, 'fixed', this.sprite);
+                this.sprite.setTexture('fixed');
                 this.sprite.interactive = false;
                 this.sprite.blendMode = 2;   
                 this.state = 'fixed';
@@ -81,10 +86,10 @@ game.module(
         
         fixIfFinished: function() {
             if (this.dir !== this.orig_dir && this.state === 'fixed' && !this.used) {
-                replaceObject(this.x, this.y, this.dir, this, 'finished', this.sprite);
+                this.sprite.setTexture('finished');
                 this.sprite.interactive = false;
                 this.sprite.blendMode = 2;   
-                this.state = 'fixed';
+                this.state = 'finished';
                 this.dir = this.orig_dir;
                 this.sprite.rotation = directionRot(this.dir);
             }

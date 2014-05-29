@@ -4,6 +4,7 @@ game.module(
         'game.my_logic',
         'engine.audio'
         ).body(function() {
+    game.addAsset('star.png', 'star');
     game.addAsset('background.png', 'back');
     game.addAsset('tank.png', 'tank');
     game.addAsset('arrow_green.png', 'inland');
@@ -11,10 +12,11 @@ game.module(
     game.addAsset('arrow_red.png', 'fixed');
     game.addAsset('arrow_white.png', 'finished');
     game.addAsset('prague.png', 'prague');
-    game.addAsset('font.fnt');
+    game.addAsset('font_r.fnt');
     game.addAsset('font_b.fnt');
     game.addAsset('font_w.fnt');
-    game.addAudio('hall_of_the_mountain_king.mp3', 'my_music');
+    game.addAudio('music.m4a', 'my_music');
+    game.addAudio('tank.m4a', 'tank_sound');
     
     Map = game.Class.extend({
         init: function() {

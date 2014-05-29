@@ -1,7 +1,10 @@
 Berlin Game Jam May 2014
-1968 game
+1968
+License: CC Attribution-NonCommercial-ShareAlike 4.0 International
+Adam "PunyOne" Streck
+JustAConcept
 
-Built using Panda.js
-map: https://www.etsy.com/listing/69792426/vintage-map-poland-and-czechoslovakia
+Built using Panda.js: http://www.pandajs.net
 font: http://www.dafont.com/capitalist.font
-music: http://incompetech.com/
+music: http://www.newgrounds.com/audio/listen/471451
+sound: http://www.freesound.org/people/cognito%20perceptu/sounds/121531

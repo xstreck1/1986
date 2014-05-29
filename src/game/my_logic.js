@@ -1,6 +1,7 @@
 game.module(
         'game.my_logic'
         ).body(function() {
+    user_volume = .5;
 
     hex_width = 639. / 13.;
     var hex_side = (hex_width / Math.cos(Math.PI / 6.)) * 0.5;
@@ -13,7 +14,7 @@ game.module(
     
     steps_c = 0;
     
-    text_blend = 0.85;
+    text_blend = 0.95;
 
     positionX = function(x, y) {
         return  hex_width * x - ((y % 2) * hex_width * 0.5);
@@ -83,5 +84,10 @@ game.module(
     areOverlapping = function(A, B) {
         return (Math.abs(A.position.x - B.position.x) + 
                 Math.abs(A.position.y - B.position.y)) < 20;
+    };
+    
+    setAtCenter = function(text, x, y) {
+        x = x - (text.scale.x * text.textWidth / 2.);
+        text.position.set(x,y);
     };
 });

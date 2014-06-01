@@ -17,6 +17,7 @@ game.Loader = game.Class.extend({
     /**
         Scene to start, when loader is finished.
         @property {game.Scene} scene
+        @default null
     **/
     scene: null,
     /**
@@ -37,43 +38,64 @@ game.Loader = game.Class.extend({
     backgroundColor: 0x000000,
     /**
         List of assets to load.
-        @property {Array} assets
+        @property {Array} assetQueue
     **/
-    assets: [],
+    assetQueue: [],
     /**
         List of sounds to load.
-        @property {Array} assets
+        @property {Array} soundQueue
     **/
-    sounds: [],
+    soundQueue: [],
     /**
         Is loader started.
         @property {Boolean} started
+        @default false
     **/
     started: false,
+    /**
+        Enable dynamic mode.
+        @property {Boolean} dynamic
+        @default true
+    **/
+    dynamic: true,
+    /**
+        Callback function for loader.
+        @property {Function} callback
+        @default null
+    **/
+    callback: null,
     
-    init: function(scene) {
-        this.scene = scene || window[game.System.startScene] || game[game.System.startScene];
+    init: function(callback) {
+        if (callback && callback.prototype.init || game.System.startScene) {
+            this.scene = callback || window[game.System.startScene] || game[game.System.startScene];
+            this.dynamic = false;
+            game.System.startScene = null;
+        }
+        else {
+            this.callback = callback;
+        }
+
         this.stage = game.system.stage;
 
-        for (var i = 0; i < game.resources.length; i++) {
-            if (game.TextureCache[game.resources[i]]) continue;
-            this.assets.push(this.getPath(game.resources[i]));
+        for (var i = 0; i < game.assetQueue.length; i++) {
+            if (game.TextureCache[game.assetQueue[i]]) continue;
+            this.assetQueue.push(this.getPath(game.assetQueue[i]));
         }
 
         if (game.Audio) {
-            for (var name in game.Audio.queue) {
-                this.sounds.push(name);
+            for (var name in game.audioQueue) {
+                this.soundQueue.push(name);
             }
         }
 
-        if (this.assets.length > 0) {
-            this.loader = new game.AssetLoader(this.assets, true);
+        if (this.assetQueue.length > 0) {
+            this.loader = new game.AssetLoader(this.assetQueue, true);
             this.loader.onProgress = this.progress.bind(this);
             this.loader.onComplete = this.loadAudio.bind(this);
             this.loader.onError = this.error.bind(this);
         }
 
-        if (this.assets.length === 0 && this.sounds.length === 0) this.percent = 100;
+        if (this.assetQueue.length === 0 && this.soundQueue.length === 0) this.percent = 100;
     },
 
     initStage: function() {
@@ -84,20 +106,20 @@ game.Loader = game.Class.extend({
             this.stage.addChild(this.logo);
         }
 
-        var barBg = new game.Graphics();
-        barBg.beginFill(game.Loader.barBg);
-        barBg.drawRect(0, 0, game.Loader.barWidth, game.Loader.barHeight);
-        barBg.position.set(game.system.width / 2 - (game.Loader.barWidth / 2), game.system.height / 2 - (game.Loader.barHeight / 2));
-        if (this.logo) barBg.position.y += this.logo.height / 2 + game.Loader.barHeight + game.Loader.barMargin;
-        this.stage.addChild(barBg);
+        this.barBg = new game.Graphics();
+        this.barBg.beginFill(game.Loader.barBg);
+        this.barBg.drawRect(0, 0, game.Loader.barWidth, game.Loader.barHeight);
+        this.barBg.position.set(game.system.width / 2 - (game.Loader.barWidth / 2), game.system.height / 2 - (game.Loader.barHeight / 2));
+        if (this.logo) this.barBg.position.y += this.logo.height / 2 + game.Loader.barHeight + game.Loader.barMargin;
+        this.stage.addChild(this.barBg);
 
-        this.bar = new game.Graphics();
-        this.bar.beginFill(game.Loader.barColor);
-        this.bar.drawRect(0, 0, game.Loader.barWidth, game.Loader.barHeight);
-        this.bar.position.set(game.system.width / 2 - (game.Loader.barWidth / 2), game.system.height / 2 - (game.Loader.barHeight / 2));
-        if (this.logo) this.bar.position.y += this.logo.height / 2 + game.Loader.barHeight + game.Loader.barMargin;
-        this.bar.scale.x = this.percent / 100;
-        this.stage.addChild(this.bar);
+        this.barFg = new game.Graphics();
+        this.barFg.beginFill(game.Loader.barColor);
+        this.barFg.drawRect(0, 0, game.Loader.barWidth, game.Loader.barHeight);
+        this.barFg.position.set(game.system.width / 2 - (game.Loader.barWidth / 2), game.system.height / 2 - (game.Loader.barHeight / 2));
+        if (this.logo) this.barFg.position.y += this.logo.height / 2 + game.Loader.barHeight + game.Loader.barMargin;
+        this.barFg.scale.x = this.percent / 100;
+        this.stage.addChild(this.barFg);
 
         if (game.Tween && game.Loader.logoTween && this.logo) {
             this.logo.rotation = -0.1;
@@ -118,36 +140,38 @@ game.Loader = game.Class.extend({
     start: function() {
         this.started = true;
 
-        if (game.scene) {
-            for (var i = this.stage.children.length - 1; i >= 0; i--) {
-                this.stage.removeChild(this.stage.children[i]);
+        if (!this.dynamic) {
+            if (game.scene) {
+                for (var i = this.stage.children.length - 1; i >= 0; i--) {
+                    this.stage.removeChild(this.stage.children[i]);
+                }
+                this.stage.setBackgroundColor(this.backgroundColor);
+
+                this.stage.interactive = false; // this is not working, bug?
+
+                this.stage.mousemove = this.stage.touchmove = null;
+                this.stage.click = this.stage.tap = null;
+                this.stage.mousedown = this.stage.touchstart = null;
+                this.stage.mouseup = this.stage.mouseupoutside = this.stage.touchend = this.stage.touchendoutside = null;
+                this.stage.mouseout = null;
             }
-            this.stage.setBackgroundColor(this.backgroundColor);
+            if (game.audio) game.audio.stopAll();
 
-            this.stage.interactive = false; // this is not working, bug?
+            if (typeof this.backgroundColor === 'number') {
+                var bg = new game.Graphics();
+                bg.beginFill(this.backgroundColor);
+                bg.drawRect(0, 0, game.system.width, game.system.height);
+                this.stage.addChild(bg);
+            }
+            
+            this.initStage();
 
-            this.stage.mousemove = this.stage.touchmove = null;
-            this.stage.click = this.stage.tap = null;
-            this.stage.mousedown = this.stage.touchstart = null;
-            this.stage.mouseup = this.stage.mouseupoutside = this.stage.touchend = this.stage.touchendoutside = null;
-            this.stage.mouseout = null;
+            if (!game.scene) this.loopId = game.setGameLoop(this.run.bind(this), game.system.canvas);
+            else game.scene = this;
         }
-        if (game.audio) game.audio.stopAll();
 
-        if (typeof this.backgroundColor === 'number') {
-            var bg = new game.Graphics();
-            bg.beginFill(this.backgroundColor);
-            bg.drawRect(0, 0, game.system.width, game.system.height);
-            this.stage.addChild(bg);
-        }
-        
-        this.initStage();
-
-        if (this.assets.length > 0) this.loader.load();
+        if (this.assetQueue.length > 0) this.loader.load();
         else this.loadAudio();
-        
-        if (!game.scene) this.loopId = game.setGameLoop(this.run.bind(this), game.system.canvas);
-        else game.scene = this;
     },
 
     /**
@@ -166,8 +190,10 @@ game.Loader = game.Class.extend({
     progress: function(loader) {
         if (loader && loader.json && !loader.json.frames && !loader.json.bones) game.json[loader.url] = loader.json;
         this.loaded++;
-        this.percent = Math.round(this.loaded / (this.assets.length + this.sounds.length) * 100);
+        this.percent = Math.round(this.loaded / (this.assetQueue.length + this.soundQueue.length) * 100);
         this.onPercentChange();
+
+        if (this.dynamic && this.loaded === (this.assetQueue.length + this.soundQueue.length)) this.ready();
     },
 
     /**
@@ -175,7 +201,7 @@ game.Loader = game.Class.extend({
         @method onPercentChange
     **/
     onPercentChange: function() {
-        if (this.bar) this.bar.scale.x = this.percent / 100;
+        if (this.barFg) this.barFg.scale.x = this.percent / 100;
     },
 
     /**
@@ -183,8 +209,8 @@ game.Loader = game.Class.extend({
         @method loadAudio
     **/
     loadAudio: function() {
-        for (var i = this.sounds.length - 1; i >= 0; i--) {
-            game.audio.load(this.sounds[i], this.progress.bind(this));
+        for (var i = this.soundQueue.length - 1; i >= 0; i--) {
+            game.audio.load(this.soundQueue[i], this.progress.bind(this));
         }
     },
 
@@ -193,14 +219,6 @@ game.Loader = game.Class.extend({
         @method ready
     **/
     ready: function() {
-        this.setScene();
-    },
-
-    /**
-        Set scene.
-        @method setScene
-    **/
-    setScene: function() {
         if (game.system.retina || game.system.hires) {
             for (var i in game.TextureCache) {
                 if (i.indexOf('@2x') !== -1) {
@@ -209,18 +227,31 @@ game.Loader = game.Class.extend({
                 }
             }
         }
-        game.resources.length = 0;
-        if (game.Audio) game.Audio.resources = {};
+
+        game.assetQueue.length = 0;
+        if (game.Audio) game.audioQueue = {};
+
+        if (!this.dynamic) return this.setScene();
+        if (typeof this.callback === 'function') this.callback();
+    },
+
+    /**
+        Set scene.
+        @method setScene
+    **/
+    setScene: function() {
         game.system.timer.last = 0;
         game.Timer.time = Number.MIN_VALUE;
-        game.clearGameLoop(this.loopId);
+        if (this.loopId) game.clearGameLoop(this.loopId);
         game.system.setScene(this.scene);
     },
 
     run: function() {
-        this.last = game.Timer.time;
-        game.Timer.update();
-        game.system.delta = (game.Timer.time - this.last) / 1000;
+        if (this.loopId) {
+            this.last = game.Timer.time;
+            game.Timer.update();
+            game.system.delta = (game.Timer.time - this.last) / 1000;
+        }
 
         this.update();
         this.render();
@@ -237,7 +268,7 @@ game.Loader = game.Class.extend({
                 this.ready();
             }
         }
-        else if (this.loaded === this.assets.length + this.sounds.length) {
+        else if (this.loaded === this.assetQueue.length + this.soundQueue.length) {
             // Everything loaded
             var loadTime = Date.now() - this.startTime;
             var waitTime = Math.max(100, game.Loader.timeout - loadTime);

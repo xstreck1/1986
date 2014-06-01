@@ -1,11 +1,9 @@
 game.module(
         'game.my_logic'
         ).body(function() {
-    user_volume = .5;
-
     hex_width = 639. / 13.;
     var hex_side = (hex_width / Math.cos(Math.PI / 6.)) * 0.5;
-    var hex_height = hex_side * 1.5;
+    hex_height = hex_side * 1.5;
 
     step_time = 1.25;
     step_rotation = Math.PI / 3.;

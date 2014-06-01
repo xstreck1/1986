@@ -12,11 +12,12 @@ game.module(
     game.addAsset('arrow_red.png', 'fixed');
     game.addAsset('arrow_white.png', 'finished');
     game.addAsset('prague.png', 'prague');
+    game.addAsset('direction.png', 'direction');
     game.addAsset('font_r.fnt');
     game.addAsset('font_b.fnt');
     game.addAsset('font_w.fnt');
-    game.addAudio('music.m4a', 'my_music');
-    game.addAudio('tank.m4a', 'tank_sound');
+    game.addAudio('music.ogg', 'my_music');
+    game.addAudio('tank.ogg', 'tank_sound');
     
     Map = game.Class.extend({
         init: function() {

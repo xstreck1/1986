@@ -6,27 +6,12 @@ game.module(
                 'game.my_logic'
                 )
         .body(function() {
-            game.Loader.inject({
-                backgroundColor: 0x110000,
-                initStage: function() {
-                    this.bar = new game.Graphics();
-                    this.bar.beginFill(0xffffff);
-                    this.bar.drawRect(0, 0, 260, 20);
-
-                    this.bar.position.x = game.system.width / 2 - (260 / 2);
-                    this.bar.position.y = game.system.height / 2 - (40 / 2);
-
-                    this.bar.scale.x = this.percent / 100;
-                    game.system.stage.addChild(this.bar);
-                },
-                onPercentChange: function() {
-                    this.bar.scale.x = this.percent / 100;
-                }
-            });
-
             InitScene = game.Scene.extend({
                 backgroundColor: 0x110000,
+                user_volume: 0.0,
+                
                 init: function() {
+                    
                     // Title
                     title_text = new game.BitmapText('1968', {font: 'CapitalistW'});
                     this.stage.addChild(title_text);
@@ -67,12 +52,12 @@ game.module(
                     this.bar.position.y = 280;
                     game.system.stage.addChild(this.bar);
                     
-                    user_volume = game.storage.get('volume') || 0;
+                    this.user_volume = game.storage.get('volume') || 0.5;
                     this.setVolume();
                 },
                 setVolume: function() {
-                    this.bar.scale.x = user_volume;
-                    game.storage.set('volume', user_volume);
+                    this.bar.scale.x = this.user_volume;
+                    game.storage.set('volume', this.user_volume);
                 },
                 click: function(event) {
                     if ((event.global.x > this.back_rect.position.x)
@@ -80,8 +65,8 @@ game.module(
                             && (event.global.y > this.back_rect.position.y)
                             && (event.global.y < this.back_rect.position.y + 40)) {
 
-                        user_volume = (event.global.x - this.bar.position.x) / 260;
-                        user_volume = Math.min(1, Math.max(user_volume, 0));
+                        this.user_volume = (event.global.x - this.bar.position.x) / 260;
+                        this.user_volume = Math.min(1, Math.max(user_volume, 0));
                         this.setVolume();
                     } else
                         game.system.setScene(MainScene);
@@ -94,14 +79,18 @@ game.module(
                 signposts: [],
                 init_fields: [[14, 5, 0], [13, 6, 0], [14, 7, 0], [13, 8, 0], [14, 9, 0]],
                 init: function() {
+                    steps_c = 0;
                     map = new Map();
                     this.prague = new Prague(5, 4, 0);
                     addSigns();
+                    this.addArrows();
                     this.setTexts();
 
                     this.addTimer(step_repeat_ms, this.my_timer.bind(this), true);
 
-                    game.audio.playMusic('my_music', user_volume + 0.000001);
+
+                    this.user_volume = game.storage.get('volume') || 0.5;
+                    game.audio.playMusic('my_music', this.user_volume  + 0.000001);
                 },
                 setTexts: function() {
                     this.highscore = game.storage.get('highscore') || 0;
@@ -115,6 +104,16 @@ game.module(
                     this.stage.addChild(this.current_text);
                     this.current_text.alpha = text_blend;
                     this.current_text.position.set(420, 50);                    
+                }, 
+                addArrows: function() {
+                    for (y = 221; y < 400; y += hex_height) {
+                        arrow = new game.Sprite('direction');
+                        arrow.anchor.set(0.5,0.5);
+                        arrow.alpha = 0.95;
+                        arrow.position.set(650,y);
+                        arrow.blendMode = 2;
+                        this.stage.addChild(arrow);
+                    }
                 },
                 my_timer: function() {
                     var finished = false;
@@ -175,7 +174,7 @@ game.module(
                     }
                     
                     if (!finished)
-                        game.audio.playSound('tank_sound', false, (user_volume * 0.015) + 0.000001);
+                        game.audio.playSound('tank_sound', false, (this.user_volume  * 0.015) + 0.000001);
                 },
                 gameEnd: function() {
                     if (steps_c > this.highscore)
@@ -249,5 +248,6 @@ game.module(
                 }
             });
 
-            game.start(InitScene);
+            game.start(InitScene, 640, 480, null, '1968_canvas');
+
         });

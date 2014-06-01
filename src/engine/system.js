@@ -90,6 +90,17 @@ game.System = game.Class.extend({
         if (!width) width = (game.System.orientation === game.System.PORTRAIT ? 768 : 1024);
         if (!height) height = (game.System.orientation === game.System.PORTRAIT ? 927 : 672);
 
+        if (game.System.resizeToFill && navigator.isCocoonJS) {
+            if (window.innerWidth / window.innerHeight !== width / height) {
+                if (game.System.orientation === game.System.LANDSCAPE) {
+                    width = height * (window.innerWidth / window.innerHeight);
+                }
+                else {
+                    height = width * (window.innerHeight / window.innerWidth);
+                }
+            }
+        }
+
         if (game.System.hires) {
             if (typeof game.System.hiresWidth === 'number' && typeof game.System.hiresHeight === 'number') {
                 if (window.innerWidth >= game.System.hiresWidth && window.innerHeight >= game.System.hiresHeight) {
@@ -109,11 +120,9 @@ game.System = game.Class.extend({
             game.scale = 2;
         }
 
-        if (typeof game.System.resize !== 'undefined') game.System.scale = game.System.resize; // Deprecated
-
         this.width = width;
         this.height = height;
-        this.canvasId = canvasId || this.canvasId;
+        this.canvasId = canvasId || game.System.canvasId || this.canvasId;
         this.timer = new game.Timer();
 
         if (!document.getElementById(this.canvasId)) {
@@ -121,9 +130,6 @@ game.System = game.Class.extend({
             canvas.id = this.canvasId;
             document.body.appendChild(canvas);
         }
-
-        // Deprecated
-        if (game.System.canvas === false) game.System.webGL = true;
 
         if (game.System.webGL) this.renderer = new game.autoDetectRenderer(width, height, document.getElementById(this.canvasId), game.System.transparent, game.System.antialias);
         else this.renderer = new game.CanvasRenderer(width, height, document.getElementById(this.canvasId), game.System.transparent);
@@ -175,17 +181,6 @@ game.System = game.Class.extend({
         }, false);
 
         if (!navigator.isCocoonJS) {
-            // Deprecated
-            if (typeof game.System.backgroundColor === 'object') {
-                game.System.bgColorMobile = game.System.backgroundColor.mobile;
-                game.System.bgColorRotate = game.System.backgroundColor.rotate;
-            }
-            // Deprecated
-            if (typeof game.System.backgroundImage === 'object') {
-                game.System.bgImageMobile = game.System.backgroundImage.mobile;
-                game.System.bgImageRotate = game.System.backgroundImage.rotate;
-            }
-
             if (game.System.bgColor && !game.System.bgColorMobile) game.System.bgColorMobile = game.System.bgColor;
             if (game.System.bgColorMobile && !game.System.bgColorRotate) game.System.bgColorRotate = game.System.bgColorMobile;
 
@@ -334,18 +329,19 @@ game.System = game.Class.extend({
                 };
                 img.src = game.config.mediaFolder + game.System.rotateImg;
                 img.style.position = 'relative';
+                img.style.maxWidth = '100%';
             }
         }
         else {
             // Desktop center
-            this.canvas.style.position = 'absolute';
+            if (game.System.center || game.System.left || game.System.top) this.canvas.style.position = 'absolute';
             if (game.System.center) {
                 this.canvas.style.top = 0;
                 this.canvas.style.left = 0;
                 this.canvas.style.bottom = 0;
                 this.canvas.style.right = 0;
             }
-            else {
+            else if (game.System.left || game.System.top) {
                 this.canvas.style.left = game.System.left + 'px';
                 this.canvas.style.top = game.System.top + 'px';
             }
@@ -358,8 +354,8 @@ game.System = game.Class.extend({
                 var maxHeight = game.System.maxHeight === 'auto' ? this.retina ? this.height / 2 : this.height : game.System.maxHeight;
                 if (game.System.minWidth) this.canvas.style.minWidth = minWidth + 'px';
                 if (game.System.minHeight) this.canvas.style.minHeight = minHeight + 'px';
-                if (game.System.maxWidth) this.canvas.style.maxWidth = maxWidth + 'px';
-                if (game.System.maxHeight) this.canvas.style.maxHeight = maxHeight + 'px';
+                if (game.System.maxWidth && !game.System.scaleToFit) this.canvas.style.maxWidth = maxWidth + 'px';
+                if (game.System.maxHeight && !game.System.scaleToFit) this.canvas.style.maxHeight = maxHeight + 'px';
             }
         }
 
@@ -418,11 +414,10 @@ game.System = game.Class.extend({
             var width = window.innerWidth;
             var height = window.innerHeight;
 
-            // iOS 7 innerHeight bugfix
-            if (game.device.iPad && height === 671 && this.orientation === game.System.LANDSCAPE) height = 672;
-            if (game.device.iPhone && height === 320 && this.orientation === game.System.LANDSCAPE) height = 319;
-            if (game.device.iPhone && height === 256 && this.orientation === game.System.LANDSCAPE) height = 319;
-
+            // iOS 7 retina innerHeight bugfix
+            if (game.device.iOS7 && window.innerHeight === 256) height = 319;
+            if (game.device.iOS7 && game.device.pixelRatio === 2 && this.orientation === game.System.LANDSCAPE) height += 2;
+            
             if (game.System.resizeToFill && !this.rotateScreenVisible) {
                 if (width / height !== this.width / this.height) {
                     // Wrong ratio, need to resize
@@ -454,7 +449,7 @@ game.System = game.Class.extend({
         else {
             // Desktop resize
             if (window.innerWidth === 0) return; // Chrome bug
-            if (window.innerWidth < this.width || window.innerHeight < this.height) {
+            if (window.innerWidth < this.width || window.innerHeight < this.height || game.System.scaleToFit) {
                 if (window.innerWidth / this.width < window.innerHeight / this.height) {
                     this.canvas.style.width = window.innerWidth + 'px';
                     this.canvas.style.height = window.innerWidth * (this.height / this.width) + 'px';
@@ -653,5 +648,17 @@ game.System.resizeToFill = false;
     @default SceneGame
 **/
 game.System.startScene = 'SceneGame';
+/**
+    Scale canvas to fit window size on desktop.
+    @attribute {Boolean} scaleToFit
+    @default false
+**/
+game.System.scaleToFit = false;
+/**
+    Canvas id for game.
+    @attribute {String} canvasId
+    @default null
+**/
+game.System.canvasId = null;
 
 });

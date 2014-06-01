@@ -29,7 +29,7 @@ var core = {
         Current engine version.
         @property {String} version
     **/
-    version: '1.5.0',
+    version: '1.5.2',
     /**
         Engine settings.
         @property {Object} config
@@ -103,7 +103,6 @@ var core = {
     json: {},
     renderer: null,
     modules: {},
-    resources: [],
     nocache: '',
     current: null,
     loadQueue: [],
@@ -111,6 +110,9 @@ var core = {
     DOMLoaded: false,
     next: 1,
     anims: {},
+
+    assetQueue: [],
+    audioQueue: {},
 
     /**
         Get JSON data.
@@ -233,7 +235,7 @@ var core = {
         id = id || path;
         path = this.config.mediaFolder + path + this.nocache;
         this.assets[id] = path;
-        if (this.resources.indexOf(path) === -1) this.resources.push(path);
+        if (this.assetQueue.indexOf(path) === -1) this.assetQueue.push(path);
         return id;
     },
 
@@ -247,7 +249,7 @@ var core = {
     addAudio: function(path, id) {
         id = id || path;
         path = this.config.mediaFolder + path + this.nocache;
-        this.Audio.queue[path] = id;
+        this.audioQueue[path] = id;
         return id;
     },
 
@@ -454,7 +456,9 @@ var core = {
             return Math.random() * (max - min) + min;
         };
 
-        this.Math = Math;
+        Math.randomInt = function(min, max) {
+            return Math.round(Math.randomBetween(min, max));
+        };
 
         // Native object extensions
         Number.prototype.limit = function(min, max) {
@@ -585,29 +589,10 @@ var core = {
             this.device.flash = !!navigator.plugins['Shockwave Flash'];
         }
     
-        var i;
-        if (this.device.iPod && this.config.iPod) {
-            for (i in this.config.iPod) this.config[i] = this.config.iPod[i];
-        }
-
-        if (this.device.iPhone && this.config.iPhone) {
-            for (i in this.config.iPhone) this.config[i] = this.config.iPhone[i];
-        }
-
-        if (this.device.iPad && this.config.iPad) {
-            for (i in this.config.iPad) this.config[i] = this.config.iPad[i];
-        }
-
-        if (this.device.iOS && this.config.iOS) {
-            for (i in this.config.iOS) this.config[i] = this.config.iOS[i];
-        }
-
-        if (this.device.android && this.config.android) {
-            for (i in this.config.android) this.config[i] = this.config.android[i];
-        }
-
-        if (this.device.wp && this.config.wp) {
-            for (i in this.config.wp) this.config[i] = this.config.wp[i];
+        for (var i in this.device) {
+            if (this.device[i] && this.config[i]) {
+                for (var o in this.config[i]) this.merge(this.config[o], this.config[i][o]);
+            }
         }
 
         this.config.sourceFolder = this.config.sourceFolder || 'src';

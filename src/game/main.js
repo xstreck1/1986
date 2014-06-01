@@ -66,7 +66,7 @@ game.module(
                             && (event.global.y < this.back_rect.position.y + 40)) {
 
                         this.user_volume = (event.global.x - this.bar.position.x) / 260;
-                        this.user_volume = Math.min(1, Math.max(user_volume, 0));
+                        this.user_volume = Math.min(1, Math.max(this.user_volume, 0));
                         this.setVolume();
                     } else
                         game.system.setScene(MainScene);
@@ -89,8 +89,8 @@ game.module(
                     this.addTimer(step_repeat_ms, this.my_timer.bind(this), true);
 
 
-                    this.user_volume = game.storage.get('volume') || 0.5;
-                    game.audio.playMusic('my_music', this.user_volume  + 0.000001);
+                    user_volume = game.storage.get('volume');
+                    game.audio.playMusic('my_music', user_volume);
                 },
                 setTexts: function() {
                     this.highscore = game.storage.get('highscore') || 0;
@@ -174,7 +174,7 @@ game.module(
                     }
                     
                     if (!finished)
-                        game.audio.playSound('tank_sound', false, (this.user_volume  * 0.015) + 0.000001);
+                        game.audio.playSound('tank_sound', false, (game.storage.get('volume')  * 0.015) + 0.000001);
                 },
                 gameEnd: function() {
                     if (steps_c > this.highscore)

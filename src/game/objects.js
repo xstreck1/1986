@@ -52,7 +52,7 @@ game.module(
             placeObject(x, y, dir, this, state);
             this.sprite.blendMode = 2;      
             this.sprite.interactive = state === 'inland';
-            this.sprite.click = this.click.bind(this);
+            this.sprite.click = this.sprite.tap = this.click.bind(this);
         },
         
         click: function(event) {

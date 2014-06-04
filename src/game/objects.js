@@ -31,7 +31,7 @@ game.module(
     Prague = game.Class.extend({
         init: function(x, y, dir) {
             placeObject(x, y, dir, this, 'prague');
-            this.sprite.blendMode = 5;   
+            this.sprite.blendMode = PIXI.blendModes.MULTIPLY;  
         }
     });
 
@@ -50,7 +50,7 @@ game.module(
             this.orig_dir = dir;
             this.state = state;
             placeObject(x, y, dir, this, state);
-            this.sprite.blendMode = 2;      
+            this.sprite.blendMode = PIXI.blendModes.MULTIPLY;      
             this.sprite.interactive = state === 'inland';
             this.sprite.click = this.sprite.tap = this.click.bind(this);
         },
@@ -69,8 +69,7 @@ game.module(
             this.dir = (this.dir + 1) % 6;
             this.sprite.rotation = directionRot(this.dir);
             this.sprite.interactive = true;
-            this.sprite.click = this.click.bind(this);
-            this.sprite.blendMode = 2;   
+            this.sprite.blendMode = PIXI.blendModes.MULTIPLY;   
         },
         
         clear: function() {
@@ -81,7 +80,8 @@ game.module(
             if (this.state === 'turned') {
                 this.sprite.setTexture('fixed');
                 this.sprite.interactive = false;
-                this.sprite.blendMode = 2;   
+                this.sprite.click = this.sprite.tap = function(){}; 
+                this.sprite.blendMode = PIXI.blendModes.MULTIPLY;   
                 this.state = 'fixed';
             }
             this.used = true;
@@ -90,8 +90,7 @@ game.module(
         fixIfFinished: function() {
             if (this.dir !== this.orig_dir && this.state === 'fixed' && !this.used) {
                 this.sprite.setTexture('finished');
-                this.sprite.interactive = false;
-                this.sprite.blendMode = 2;   
+                this.sprite.blendMode = PIXI.blendModes.MULTIPLY;   
                 this.state = 'finished';
                 this.dir = this.orig_dir;
                 this.sprite.rotation = directionRot(this.dir);

@@ -56,7 +56,9 @@ game.module(
                     this.setVolume();
                 },
                 setVolume: function() {
+                    this.user_volume = Math.min(1, Math.max(this.user_volume, 0));
                     this.bar.scale.x = this.user_volume;
+                    game.audio.musicVolume = this.user_volume + 0.00001;
                     game.storage.set('volume', this.user_volume);
                 },
                 click: function(event) {
@@ -66,10 +68,11 @@ game.module(
                             && (event.global.y < this.back_rect.position.y + 40)) {
 
                         this.user_volume = (event.global.x - this.bar.position.x) / 260;
-                        this.user_volume = Math.min(1, Math.max(this.user_volume, 0));
                         this.setVolume();
-                    } else
+                    } else {
+                        this.setVolume();
                         game.system.setScene(MainScene);
+                    }
                 }
             });
 
@@ -88,9 +91,7 @@ game.module(
 
                     this.addTimer(step_repeat_ms, this.my_timer.bind(this), true);
 
-
-                    user_volume = game.storage.get('volume');
-                    game.audio.playMusic('my_music', user_volume);
+                    game.audio.playMusic('my_music');
                 },
                 setTexts: function() {
                     this.highscore = game.storage.get('highscore') || 0;
@@ -111,7 +112,7 @@ game.module(
                         arrow.anchor.set(0.5,0.5);
                         arrow.alpha = 0.95;
                         arrow.position.set(650,y);
-                        arrow.blendMode = 2;
+                        arrow.blendMode = PIXI.blendModes.MULTIPLY;
                         this.stage.addChild(arrow);
                     }
                 },
@@ -174,7 +175,7 @@ game.module(
                     }
                     
                     if (!finished)
-                        game.audio.playSound('tank_sound', false, (game.storage.get('volume')  * 0.015) + 0.000001);
+                        game.audio.playSound('tank_sound', false, game.audio.musicVolume * 0.015);
                 },
                 gameEnd: function() {
                     if (steps_c > this.highscore)
@@ -190,7 +191,7 @@ game.module(
                 init: function() {
                     map = new Map();
                     map.sprite.alpha = 1;
-                    map.sprite.blendMode = 8;
+                    map.sprite.blendMode = PIXI.blendModes.MULTIPLY;
                     
                     // Title
                     text = new game.BitmapText('You resisted for ' + steps_c + ' hours', {font: 'CapitalistW'});
